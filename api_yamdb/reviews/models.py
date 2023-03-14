@@ -103,25 +103,53 @@ class Review(models.Model):
     """
     title = models.OneToOneField(
         Titles,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         verbose_name='Название произведения',
     )
+    text = models.TextField(
+        verbose_name='Текст отзыва',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор отзыва',
+    )
+    score = models.IntegerField(
+        verbose_name='Оценка',
+    )
+    pub_date = models.DateTimeField(
+        'Дата публикации отзыва',
+        auto_now_add=True,
+    )
+
+    class Meta:
+        default_related_name = 'reviews'
+        ordering = ('-pub_date',)
+
+    def __str__(self):
+        return self.text[:HEADER_LENGTH]
+
+
+class Comment(models.Model):
+    """
+    Комментарии к отзывам.
+    Пользователь может оставить много комментариев на отзыв.
+    """
     text = models.TextField(
         verbose_name='Текст комментария',
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор произведения',
+        verbose_name='Автор комментария',
     )
-    score = models.IntegerField()
     pub_date = models.DateTimeField(
-        'Дата публикации',
+        'Дата публикации комментария',
         auto_now_add=True,
     )
 
     class Meta:
-        default_related_name = 'reviews'
+        default_related_name = 'comments'
         ordering = ('-pub_date',)
 
     def __str__(self):
