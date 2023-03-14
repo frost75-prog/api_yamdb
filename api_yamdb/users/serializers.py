@@ -1,4 +1,4 @@
-from rest_framework import serializers, exceptions
+from rest_framework import exceptions, serializers
 from rest_framework.validators import UniqueValidator
 
 from api_yamdb.settings import REGEX
