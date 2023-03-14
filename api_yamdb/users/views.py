@@ -1,90 +1,80 @@
-from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.tokens import default_token_generator as tg
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, status
-from rest_framework.permissions import AllowAny
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 
 from .models import User
 from .permissions import IsAdmin
-from .serializers import AdminSerializer, TokenSerializer, UserSerializer
+from .serializers import (AdminUserSerializer, RegisterSerializer,
+                          TokenSerializer, UserSerializer)
 
 
-def create_confirmation_code_and_send_email(username):
-    # создаем confirmation code и отправляем по email
-    user = get_object_or_404(User, username=username)
-    confirmation_code = default_token_generator.make_token(user)
-    send_mail(
-        subject='Confirmation code',
-        message=f'Your confirmation code {confirmation_code}',
-        from_email=DEFAULT_FROM_EMAIL,
-        recipient_list=['i@yandex.ru'])
-
-
-class APISignUp(APIView):
-    """Регистрация пользователя"""
-    permission_classes = (AllowAny, )
-
-    def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            create_confirmation_code_and_send_email(
-                serializer.data['username'])
-            return Response(
-                {'email': serializer.data['email'],
-                 'username': serializer.data['username']},
-                status=status.HTTP_200_OK)
-
-
-class APIToken(APIView):
-    """Выдача токена"""
-    permission_classes = (AllowAny, )
-
-    def post(self, request):
-        serializer = TokenSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            user = get_object_or_404(
-                User, username=serializer.data['username'])
-            # проверяем confirmation code, если верный, выдаем токен
-            if default_token_generator.check_token(
-               user, serializer.data['confirmation_code']):
-                token = AccessToken.for_user(user)
-                return Response(
-                    {'token': str(token)}, status=status.HTTP_200_OK)
-            return Response({
-                'confirmation code': 'Некорректный код подтверждения!'},
-                status=status.HTTP_400_BAD_REQUEST)
-
-
-class APIUser(APIView):
-    """Работа со своими данными для пользователя"""
-
-    def get(self, request, *args, **kwargs):
-        user = get_object_or_404(User, username=request.user.username)
-        serializer = UserSerializer(user, many=False)
-        return Response(serializer.data)
-
-    def patch(self, request, *args, **kwargs):
-        user = get_object_or_404(User, username=request.user.username)
-        serializer = UserSerializer(
-            user, data=request.data, partial=True, many=False)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserViewSetForAdmin(ModelViewSet):
-    """Работа с пользователями для администратора"""
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = AdminSerializer
+    serializer_class = AdminUserSerializer
+    permission_classes = (IsAdmin,)
+    filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
-    permission_classes = (IsAdmin, )
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('username', )
+    search_fields = ('username',)
+    pagination_class = PageNumberPagination
+
+    @action(
+        detail=False, methods=['get', 'patch'],
+        url_path='me', url_name='me',
+        permission_classes=(IsAuthenticated,)
+    )
+    def users_profile(self, request):
+        """Профайл пользователя"""
+        serializer = UserSerializer(request.user)
+        if request.method == 'PATCH':
+            serializer = UserSerializer(
+                request.user, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register(request):
+    """Отправка и создание кода"""
+    serializer = RegisterSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        send_confirmation_code(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def token(request):
+    """Получаем токен"""
+    serializer = TokenSerializer(data=request.data)
+    username = serializer.data['username']
+    confirmation_code = serializer.data['confirmation_code']
+    user = get_object_or_404(User, username=username)
+
+    if serializer.is_valid() and tg.check_token(user, confirmation_code):
+        token = AccessToken.for_user(user)
+        return Response({'token': str(token)}, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def send_confirmation_code(user):
+    """Отправка кода на почту"""
+    confirmation_code = tg.make_token(user)
+    subject = 'Код подтверждения на сервисе YaMDb'
+    message = f'{confirmation_code} - ваш код авторизации на сервисе YaMDb'
+    admin_email = DEFAULT_FROM_EMAIL
+    user_email = [user.email]
+    return send_mail(subject, message, admin_email, user_email)
