@@ -1,49 +1,56 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
+
+from api_yamdb.settings import REGEX
+
+
+class MyUserManager(UserManager):
+
+    def create_user(self, username, email, password, **extra_fields):
+        if not email:
+            raise ValueError('Поле email обязательно!')
+        if not REGEX.match(username) or username.lower() == 'me':
+            raise ValueError('Invalid username!')
+        return super().create_user(
+            username, email=email, password=password, **extra_fields)
+
+    def create_superuser(
+            self, username, email, password, role='admin', **extra_fields):
+        return super().create_superuser(
+            username, email, password, role='admin', **extra_fields)
 
 
 class User(AbstractUser):
-    """
-    Пользователи.
-    """
 
     ROLE_CHOICES = [
-        ('admin', 'Administrator'),
         ('user', 'User'),
-        ('moderator', 'Moderator')
+        ('moderator', 'Moderator'),
+        ('admin', 'Administrator'),
     ]
 
     username = models.CharField(
         max_length=150,
         unique=True,
-        verbose_name='Имя пользователя',
+        db_index=True
     )
-    email = models.EmailField(
-        'Email',
-        max_length=254,
-        blank=False,
-        unique=True,
-        verbose_name='Адрес эл.почты',
-    )
-    bio = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name='Биография',
-    )
-    role = models.CharField(
-        max_length=9,
-        choices=ROLE_CHOICES,
-        default='user',
-        verbose_name='Права доступа относительно статуса пользователя',
-    )
+    bio = models.TextField('Biography', blank=True, null=True)
+    role = models.CharField(max_length=9, choices=ROLE_CHOICES, default='user')
+    objects = MyUserManager()
 
-    REQUIRED_FIELDS = ['email']
+    REQUIRED_FIELDS = ('email', 'password')
 
     class Meta:
-        """Метаданные."""
-        verbose_name_plural = 'Пользователи'
-        verbous_name = 'Пользователь'
         ordering = ('id',)
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
     def __str__(self):
         return str(self.username)
+
+    @property
+    def is_admin(self):
+        return self.role == self.ROLE_CHOICES[2][0]
+
+    @property
+    def is_moderator(self):
+        return self.role == self.ROLE_CHOICES[1][0]
