@@ -1,5 +1,10 @@
 from django.db import models
 
+from users.models import User
+
+
+HEADER_LENGTH = 50
+
 
 class Categories(models.Model):
     """
@@ -89,3 +94,35 @@ class Titles(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+
+class Review(models.Model):
+    """
+     Отзывы, к произведениям.
+     Пользователь может оставить только один отзыв на произведение.
+    """
+    title = models.OneToOneField(
+        Titles,
+        on_delete=models.SET_NULL,
+        verbose_name='Название произведения',
+    )
+    text = models.TextField(
+        verbose_name='Текст комментария',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор произведения',
+    )
+    score = models.IntegerField()
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True,
+    )
+
+    class Meta:
+        default_related_name = 'reviews'
+        ordering = ('-pub_date',)
+
+    def __str__(self):
+        return self.text[:HEADER_LENGTH]
