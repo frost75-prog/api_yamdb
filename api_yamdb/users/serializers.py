@@ -6,7 +6,12 @@ from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели User.
+    """
+
     def validate_username(self, value):
+        """Валидация имени пользователя."""
         regex = re.compile(r'^[\w.@+-]+\z')
         if User.objects.filter(username__iexact=value).exists():
             raise serializers.ValidationError(
@@ -16,5 +21,6 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     class Meta:
+        """Методанные."""
         model = User
         fields = '__all__'
