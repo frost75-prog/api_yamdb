@@ -28,7 +28,7 @@ class Categories(models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        return str(self.name)
+        return str(self.name)[:HEADER_LENGTH]
 
 
 class Genres(models.Model):
@@ -53,7 +53,7 @@ class Genres(models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        return str(self.name)
+        return str(self.name)[:HEADER_LENGTH]
 
 
 class Titles(models.Model):
@@ -93,7 +93,7 @@ class Titles(models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        return str(self.name)
+        return str(self.name)[:HEADER_LENGTH]
 
 
 class Review(models.Model):
