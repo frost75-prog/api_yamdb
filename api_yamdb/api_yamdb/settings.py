@@ -107,12 +107,12 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
-PAGINATOR_PAGE = 10
+PAGINATOR_PAGE = 30
 
 REGEX = re.compile(r'^[\w.@+-]+\Z')
 REGEX_SLUG = re.compile(r'^[-a-zA-Z0-9_]+$')
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
 REST_FRAMEWORK = {
@@ -129,6 +129,6 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=365),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
