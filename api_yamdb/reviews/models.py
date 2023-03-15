@@ -1,9 +1,12 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from users.models import User
 
 
 HEADER_LENGTH = 50
+SCORE_MIN = 1
+SCORE_MAX = 10
 
 
 class Categories(models.Model):
@@ -123,7 +126,11 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Автор отзыва',
     )
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(SCORE_MIN),
+            MaxValueValidator(SCORE_MAX)
+        ],
         verbose_name='Оценка',
     )
     pub_date = models.DateTimeField(
