@@ -1,7 +1,11 @@
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 
-from api_yamdb.settings import REGEX
+from api_yamdb.settings import REGEX_USER
+
+
+def username_not_correct(value):
+    return not REGEX_USER.match(value) or value.lower() == 'me'
 
 
 class MyUserManager(UserManager):
@@ -9,7 +13,7 @@ class MyUserManager(UserManager):
     def create_user(self, username, email, password, **extra_fields):
         if not email:
             raise ValueError('Поле email обязательно!')
-        if not REGEX.match(username) or username.lower() == 'me':
+        if username_not_correct(username):
             raise ValueError('Invalid username!')
         return super().create_user(
             username, email=email, password=password, **extra_fields)

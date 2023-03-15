@@ -1,34 +1,43 @@
 from rest_framework import exceptions, serializers
 from rest_framework.validators import UniqueValidator
 
-from api_yamdb.settings import REGEX
-
-from .models import User
+from .models import User, username_not_correct
 
 
-class UserSerializer(serializers.ModelSerializer):
-    role = serializers.StringRelatedField(read_only=True)
-    username = serializers.CharField(
-        validators=[UniqueValidator(queryset=User.objects.all())
-                    ], required=True,)
+class ForUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=User.objects.all())
-                    ],
+        validators=[UniqueValidator(queryset=User.objects.all())]
     )
 
     class Meta:
         model = User
-        fields = ('__all__')
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+        read_only_fields = ('role', )
+
+    def validate_username(self, value):
+        if username_not_correct(value):
+            raise serializers.ValidationError('Invalid username!')
+        return value
+
+    def validate_email(self, value):
+        if len(value) > 254:
+            raise serializers.ValidationError('Invalid email!')
+        return value
 
 
-class RegisterSerializer(serializers.ModelSerializer):
+class ForAdminSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
         model = User
-        fields = ('username', 'email',)
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role')
 
     def validate_username(self, value):
-        if not REGEX.match(value) or value.lower() == 'me':
+        if username_not_correct(value):
             raise serializers.ValidationError('Invalid username!')
         return value
 
@@ -38,16 +47,8 @@ class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(max_length=150, required=True)
 
     def validate_username(self, value):
-        if not REGEX.match(value) or value.lower() == 'me':
+        if username_not_correct(value):
             raise serializers.ValidationError('Invalid username!')
         if not User.objects.filter(username=value).exists():
             raise exceptions.NotFound('User not found!')
         return value
-
-
-class AdminUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role',
-        )
