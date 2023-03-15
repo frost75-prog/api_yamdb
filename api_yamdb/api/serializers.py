@@ -1,12 +1,13 @@
 from rest_framework import serializers
 
-from reviews.models import Categories, Genres, Titles
+from reviews.models import Categories, Genres, Titles, Review, Comment,\
+    SCORE_MIN, SCORE_MAX
 
 from api_yamdb.settings import REGEX_SLUG
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
-    """
+    """"
     Сериализер для модели Categories.
     """
     name = serializers.CharField(
@@ -81,3 +82,49 @@ class TitleSerializer(serializers.ModelSerializer):
         """Метаданные."""
         model = Titles
         fields = '__all__'
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для модели Review.
+    """
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+    )
+    text = serializers.CharField(
+        required=True,
+    )
+
+    class Meta:
+        """Метаданные."""
+        model = Review
+        fields = '__all__'
+        read_only_fields = (
+            'author',
+            'pub_date',
+        )
+
+    def validate_score(self, value):
+        """Кастомный валидатор для поля score."""
+        if value not in range(SCORE_MIN, SCORE_MAX):
+            raise serializers.ValidationError(
+                'Значение вне допутимого диапазона!')
+        return value
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """
+    Сериалайзер для модели Comment.
+    """
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+    )
+
+    class Meta:
+        """Метаданные."""
+        model = Comment
+        fields = '__all__'
+        read_only_fields = (
+            'author',
+            'pub_date',
+        )
