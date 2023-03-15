@@ -14,11 +14,13 @@ class Categories(models.Model):
     name = models.CharField(
         max_length=256,
         verbose_name='Название категории',
+        help_text='Введите название категории',
     )
     slug = models.SlugField(
         max_length=50,
         unique=True,
         verbose_name='Слаг-индентификатор',
+        help_text='Введите slug-идентификатор',
     )
 
     class Meta:
@@ -28,7 +30,7 @@ class Categories(models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        return str(self.name)
+        return str(self.name)[:HEADER_LENGTH]
 
 
 class Genres(models.Model):
@@ -39,11 +41,13 @@ class Genres(models.Model):
     name = models.CharField(
         max_length=256,
         verbose_name='Название жанра',
+        help_text='Введите название жанра',
     )
     slug = models.SlugField(
         max_length=50,
         unique=True,
         verbose_name='Слаг-индентификатор',
+        help_text='Введите slug-идентификатор',
     )
 
     class Meta:
@@ -53,7 +57,7 @@ class Genres(models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        return str(self.name)
+        return str(self.name)[:HEADER_LENGTH]
 
 
 class Titles(models.Model):
@@ -64,12 +68,15 @@ class Titles(models.Model):
     name = models.CharField(
         max_length=256,
         verbose_name='Название',
+        help_text='Введите название произведения',
     )
     year = models.IntegerField(
         verbose_name='Год выпуска',
+        help_text='Введите год выпуска произведения',
     )
     description = models.TextField(
         verbose_name='Описание',
+        help_text='Введите описание',
     )
     genre = models.ForeignKey(
         Genres,
@@ -77,6 +84,7 @@ class Titles(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         verbose_name='Жанр произведения',
+        help_text='Выберите жанр',
     )
     category = models.OneToOneField(
         Categories,
@@ -84,6 +92,7 @@ class Titles(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         verbose_name='Категория произведения',
+        help_text='Выберите категорию',
     )
 
     class Meta:
@@ -93,7 +102,7 @@ class Titles(models.Model):
         ordering = ('id',)
 
     def __str__(self):
-        return str(self.name)
+        return str(self.name)[:HEADER_LENGTH]
 
 
 class Review(models.Model):

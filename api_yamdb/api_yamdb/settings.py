@@ -110,6 +110,7 @@ STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 PAGINATOR_PAGE = 30
 
 REGEX = re.compile(r'^[\w.@+-]+\Z')
+REGEX_SLUG = re.compile(r'^[-a-zA-Z0-9_]+$')
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
