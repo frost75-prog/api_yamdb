@@ -25,6 +25,7 @@ class Categories(models.Model):
         verbose_name='Слаг-индентификатор',
         help_text='Введите slug-идентификатор',
     )
+    objects = models.Manager()
 
     class Meta:
         """Метаданные."""
@@ -52,6 +53,7 @@ class Genres(models.Model):
         verbose_name='Слаг-индентификатор',
         help_text='Введите slug-идентификатор',
     )
+    objects = models.Manager()
 
     class Meta:
         """Метаданные."""
@@ -88,6 +90,7 @@ class Titles(models.Model):
         on_delete=models.SET_NULL,
         verbose_name='Жанр произведения',
         help_text='Выберите жанр',
+        related_name='genre',
     )
     category = models.OneToOneField(
         Categories,
@@ -96,7 +99,9 @@ class Titles(models.Model):
         on_delete=models.SET_NULL,
         verbose_name='Категория произведения',
         help_text='Выберите категорию',
+        related_name='category',
     )
+    objects = models.Manager()
 
     class Meta:
         """Метаданные."""
