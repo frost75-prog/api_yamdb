@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework import serializers
 
 from reviews.models import Categories, Genres, Titles
@@ -81,3 +83,16 @@ class TitleSerializer(serializers.ModelSerializer):
         """Метаданные."""
         model = Titles
         fields = '__all__'
+
+    def validate_year(self, value):
+        """
+        Кастомный валидатор для поля year.
+        Год выпуска не может быть больше текущего.
+        """
+        if value > datetime.now().year:
+            raise serializers.ValidationError(
+                'Invalid year! Year must be less then current year.')
+        elif value < 0:
+            raise serializers.ValidationError(
+                'Invalid year! Year must be biggest then zero.')
+        return value
