@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import Categories, Genres, Titles, Review, Comment,\
     SCORE_MIN, SCORE_MAX
@@ -19,7 +20,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
     slug = serializers.SlugField(
         max_length=50,
         required=True,
-        read_only=True,
+        validators=[UniqueValidator(queryset=Categories.objects.all())]
     )
 
     class Meta:
@@ -53,7 +54,7 @@ class GenreSerializer(serializers.ModelSerializer):
     slug = serializers.SlugField(
         max_length=50,
         required=True,
-        read_only=True,
+        validators=[UniqueValidator(queryset=Genres.objects.all())]
     )
 
     class Meta:
@@ -63,7 +64,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
         """Кастомный валидатор для поля name."""
-        if len(value) > 256:
+        if len(value) >= 256:
             raise serializers.ValidationError('Invalid slug!')
         return value
 
@@ -71,7 +72,7 @@ class GenreSerializer(serializers.ModelSerializer):
         """Кастомный валидатор для поля slug."""
         if not REGEX_SLUG.match(value):
             raise serializers.ValidationError('Invalid slug!')
-        elif len(value) > 50:
+        elif len(value) >= 50:
             raise serializers.ValidationError('Invalid slug!')
         return value
 
@@ -88,12 +89,13 @@ class TitleSerializer(serializers.ModelSerializer):
         required=True,
     )
     genre = serializers.SlugRelatedField(
+        queryset=Genres.objects.all(),
+        slug_field='slug',
         many=True,
-        required=True,
-        slug_field='genre_title'
     )
-    category = serializers.SlugField(
-        required=True,
+    category = serializers.SlugRelatedField(
+        queryset=Categories.objects.all(),
+        slug_field='slug',
     )
 
     class Meta:
@@ -127,6 +129,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     """
     author = serializers.SlugRelatedField(
         slug_field='username',
+        read_only=True
     )
     text = serializers.CharField(
         required=True,
@@ -155,6 +158,7 @@ class CommentSerializer(serializers.ModelSerializer):
     """
     author = serializers.SlugRelatedField(
         slug_field='username',
+        read_only=True
     )
 
     class Meta:
@@ -162,6 +166,5 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = '__all__'
         read_only_fields = (
-            'author',
             'pub_date',
         )

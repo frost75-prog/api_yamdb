@@ -82,6 +82,8 @@ class Titles(models.Model):
     description = models.TextField(
         verbose_name='Описание',
         help_text='Введите описание',
+        null=True,
+        blank=True,
     )
     genre = models.ForeignKey(
         Genres,
