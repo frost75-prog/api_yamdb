@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import filters, mixins, viewsets, status
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 
@@ -30,14 +29,6 @@ class CategoriesViewSet(
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-
-    def list(self, request, *args, **kwargs):
-        """
-        Получение списка всех категорий.
-        """
-        queryset = self.get_queryset()
-        return Response(CategoriesSerializer(queryset, many=True).data,
-                        status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         """
@@ -83,14 +74,6 @@ class GenresViewSet(
     search_fields = ('name',)
     lookup_field = 'slug'
 
-    def list(self, request, *args, **kwargs):
-        """
-        Получение списка всех жанров.
-        """
-        queryset = self.get_queryset()
-        return Response(GenreSerializer(queryset, many=True).data,
-                        status=status.HTTP_200_OK)
-
     def create(self, request, *args, **kwargs):
         """
         Создание жанра.
@@ -119,36 +102,16 @@ class GenresViewSet(
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class TitleViewSet(
-        mixins.ListModelMixin,
-        mixins.CreateModelMixin,
-        mixins.RetrieveModelMixin,
-        mixins.DestroyModelMixin,
-        viewsets.GenericViewSet):
+class TitleViewSet(viewsets.ModelViewSet):
     """
     ViewSet для модели Titles.
     """
+    queryset = Titles.objects.all()
     serializer_class = TitleSerializer
     pagination_class = PageNumberPagination
     permission_classes = (IsAccountAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('category__slug', 'genre__slug', 'name', 'year')
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        Получение информации о произведении.
-        """
-        instance = get_object_or_404(Titles, pk=self.kwargs.get('titles_id'))
-        return Response(self.serializer_class(instance).data,
-                        status=status.HTTP_200_OK)
-
-    def list(self, request, *args, **kwargs):
-        """
-        Получение списка всех произведений.
-        """
-        queryset = self.get_queryset()
-        return Response(TitleSerializer(queryset, many=True).data,
-                        status=status.HTTP_200_OK)
+    search_fields = ('category__slug', 'genre__slug', 'name', 'year',)
 
     def create(self, request, *args, **kwargs):
         """

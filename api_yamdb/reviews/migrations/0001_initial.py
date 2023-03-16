@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(help_text='Введите название произведения', max_length=256, verbose_name='Название')),
                 ('year', models.IntegerField(help_text='Введите год выпуска произведения', verbose_name='Год выпуска')),
-                ('description', models.TextField(help_text='Введите описание', verbose_name='Описание')),
+                ('description', models.TextField(blank=True, help_text='Введите описание', null=True, verbose_name='Описание')),
                 ('category', models.OneToOneField(blank=True, help_text='Выберите категорию', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='category', to='reviews.categories', verbose_name='Категория произведения')),
                 ('genre', models.ForeignKey(blank=True, help_text='Выберите жанр', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='genre', to='reviews.genres', verbose_name='Жанр произведения')),
             ],
