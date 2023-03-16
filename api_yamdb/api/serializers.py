@@ -27,9 +27,17 @@ class CategoriesSerializer(serializers.ModelSerializer):
         model = Categories
         fields = '__all__'
 
+    def validate_name(self, value):
+        """Кастомный валидатор для поля name."""
+        if len(value) > 256:
+            raise serializers.ValidationError('Invalid slug!')
+        return value
+
     def validate_slug(self, value):
         """Кастомный валидатор для поля slug."""
-        if not REGEX_SLUG.match(value) or value.lower() == 'slug':
+        if not REGEX_SLUG.match(value):
+            raise serializers.ValidationError('Invalid slug!')
+        elif len(value) > 50:
             raise serializers.ValidationError('Invalid slug!')
         return value
 
@@ -53,9 +61,17 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genres
         fields = '__all__'
 
+    def validate_name(self, value):
+        """Кастомный валидатор для поля name."""
+        if len(value) > 256:
+            raise serializers.ValidationError('Invalid slug!')
+        return value
+
     def validate_slug(self, value):
         """Кастомный валидатор для поля slug."""
-        if not REGEX_SLUG.match(value) or value.lower() == 'slug':
+        if not REGEX_SLUG.match(value):
+            raise serializers.ValidationError('Invalid slug!')
+        elif len(value) > 50:
             raise serializers.ValidationError('Invalid slug!')
         return value
 
@@ -85,6 +101,11 @@ class TitleSerializer(serializers.ModelSerializer):
         model = Titles
         fields = '__all__'
 
+    def validate_name(self, value):
+        """Кастомный валидатор для поля name."""
+        if len(value) > 256:
+            raise serializers.ValidationError('Invalid slug!')
+        return value
 
     def validate_year(self, value):
         """

@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import filters, mixins, viewsets, status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 
@@ -29,6 +30,14 @@ class CategoriesViewSet(
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
+
+    def list(self, request, *args, **kwargs):
+        """
+        Получение списка всех категорий.
+        """
+        queryset = self.get_queryset()
+        return Response(CategoriesSerializer(queryset, many=True).data,
+                        status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         """
@@ -73,6 +82,14 @@ class GenresViewSet(
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
+
+    def list(self, request, *args, **kwargs):
+        """
+        Получение списка всех жанров.
+        """
+        queryset = self.get_queryset()
+        return Response(GenreSerializer(queryset, many=True).data,
+                        status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         """
