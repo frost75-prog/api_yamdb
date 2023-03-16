@@ -13,7 +13,7 @@ from api_yamdb.settings import (DEFAULT_FROM_EMAIL, DEFAULT_SUBJECT_EMAIL,
                                 DEFAULT_TEXT_EMAIL)
 from .models import User
 from .permissions import IsAdmin
-from .serializers import ForAdminSerializer, ForUserSerializer, TokenSerializer
+from .serializers import AdminSerializer, UserSerializer, TokenSerializer
 
 
 def send_confirmation_code(user):
@@ -25,9 +25,10 @@ def send_confirmation_code(user):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    """Работа со своими данными для пользователя"""
+    """Работа с данными для пользователя"""
     queryset = User.objects.all()
-    serializer_class = ForAdminSerializer
+    serializer_class = AdminSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete', 'update']
     permission_classes = (IsAdmin,)
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
@@ -41,13 +42,25 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def users_profile(self, request):
         """Профайл пользователя"""
-        serializer = ForUserSerializer(request.user)
+        serializer = AdminSerializer(request.user)
         if request.method == 'PATCH':
-            serializer = ForUserSerializer(
+            serializer = AdminSerializer(
                 request.user, data=request.data, partial=True
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(
+        detail=False, methods=['post'],
+        permission_classes=(IsAuthenticated,)
+    )
+    def users_create(self, request):
+        """Создание нового пользователя"""
+        serializer = AdminSerializer(
+            request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -55,9 +68,8 @@ class UserViewSet(viewsets.ModelViewSet):
 @permission_classes([AllowAny])
 def register(request):
     """Отправка и создание кода"""
-    serializer = ForUserSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer = UserSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
     user = serializer.save()
     send_confirmation_code(user)
     return Response(serializer.data, status=status.HTTP_200_OK)

@@ -4,32 +4,27 @@ from rest_framework.validators import UniqueValidator
 from .models import User, username_not_correct
 
 
-class ForUserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
+        max_length=254,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
 
     class Meta:
+        fields = ('email', 'username')
         model = User
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
-        )
-        read_only_fields = ('role', )
 
     def validate_username(self, value):
         if username_not_correct(value):
             raise serializers.ValidationError('Invalid username!')
         return value
 
-    def validate_email(self, value):
-        if len(value) > 254:
-            raise serializers.ValidationError('Invalid email!')
-        return value
 
-
-class ForAdminSerializer(serializers.ModelSerializer):
+class AdminSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=User.objects.all())])
+        max_length=254,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
 
     class Meta:
         model = User
@@ -39,6 +34,12 @@ class ForAdminSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if username_not_correct(value):
             raise serializers.ValidationError('Invalid username!')
+        return value
+
+    def validate_role(self, value):
+        if (self.data['method'] == 'PATCH'
+                and value != self.request.user.role):
+            raise serializers.ValidationError('Invalid method role!')
         return value
 
 
