@@ -24,7 +24,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'rest_framework.authtoken',
 
     'api.apps.ApiConfig',
     'reviews.apps.ReviewsConfig',
@@ -61,9 +60,7 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = 'api_yamdb.wsgi.application'
-
 
 # Database
 
@@ -73,8 +70,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-AUTH_USER_MODEL = 'users.User'
 
 # Password validation
 
@@ -109,11 +104,13 @@ STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
 PAGINATOR_PAGE = 30
 
-REGEX = re.compile(r'^[\w.@+-]+\Z')
+REGEX_USER = re.compile(r'^[\w.@+-]+\Z')
 REGEX_SLUG = re.compile(r'^[-a-zA-Z0-9_]+$')
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
+DEFAULT_SUBJECT_EMAIL = 'Код подтверждения на сервисе YaMDb'
+DEFAULT_TEXT_EMAIL = '{} - ваш код авторизации на сервисе YaMDb'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -132,3 +129,4 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=365),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+AUTH_USER_MODEL = 'users.User'
