@@ -11,7 +11,9 @@ from .permissions import IsAccountAdminOrReadOnly
 from .serializers import (
     CategoriesSerializer,
     GenreSerializer,
-    TitleSerializer)
+    TitleSerializer,
+    ReviewSerializer,
+)
 
 
 class CategoriesViewSet(
@@ -167,3 +169,23 @@ class TitleViewSet(viewsets.ModelViewSet):
         instance = get_object_or_404(Titles, pk=self.kwargs.get('titles_id'))
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet для модели Review.
+    """
+    serializer_class = ReviewSerializer
+
+    @property
+    def _title(self):
+        return get_object_or_404(Titles, id=self.kwargs.get("title_id"))
+
+    def get_queryset(self):
+        return self._title.reviews.all()
+
+    def perform_create(self, serializer):
+        serializer.save(
+            author=self.request.user,
+            post=self._title
+        )

@@ -120,7 +120,7 @@ class Review(models.Model):
      Отзывы, к произведениям.
      Пользователь может оставить только один отзыв на произведение.
     """
-    title = models.OneToOneField(
+    title = models.ForeignKey(
         Titles,
         on_delete=models.CASCADE,
         verbose_name='Название произведения',
