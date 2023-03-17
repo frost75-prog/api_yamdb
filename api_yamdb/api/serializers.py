@@ -23,6 +23,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
         required=True,
         validators=[UniqueValidator(queryset=Categories.objects.all())]
     )
+    lookup_field = 'slug'
 
     class Meta:
         """Метаданные."""
@@ -58,6 +59,7 @@ class GenreSerializer(serializers.ModelSerializer):
         required=True,
         validators=[UniqueValidator(queryset=Genres.objects.all())]
     )
+    lookup_field = 'slug'
 
     class Meta:
         """Метаданные."""
