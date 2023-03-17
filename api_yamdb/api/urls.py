@@ -23,7 +23,6 @@ api_router_v1.register(
     basename='comments'
 )
 
-
 urlpatterns = [
     path('', include(api_router_v1.urls)),
 ]
