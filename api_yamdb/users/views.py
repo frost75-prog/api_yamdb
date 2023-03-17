@@ -13,7 +13,8 @@ from api_yamdb.settings import (DEFAULT_FROM_EMAIL, DEFAULT_SUBJECT_EMAIL,
                                 DEFAULT_TEXT_EMAIL)
 from .models import User
 from .permissions import IsAdmin
-from .serializers import AdminSerializer, UserSerializer, TokenSerializer
+from .serializers import (AdminUserSerializer, RegisterSerializer,
+                          TokenSerializer, UserSerializer)
 
 
 def send_confirmation_code(user):
@@ -27,7 +28,7 @@ def send_confirmation_code(user):
 class UserViewSet(viewsets.ModelViewSet):
     """Работа с данными для пользователя"""
     queryset = User.objects.all()
-    serializer_class = AdminSerializer
+    serializer_class = AdminUserSerializer
     http_method_names = ['get', 'post', 'patch', 'delete', 'update']
     permission_classes = (IsAdmin,)
     filter_backends = (filters.SearchFilter,)
@@ -38,29 +39,17 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         detail=False, methods=['get', 'patch'],
         url_path='me', url_name='me',
-        permission_classes=(IsAuthenticated,)
+        permission_classes=(IsAuthenticated,),
+        serializer_class=UserSerializer
     )
     def users_profile(self, request):
         """Профайл пользователя"""
-        serializer = AdminSerializer(request.user)
+        serializer = self.get_serializer(request.user)
         if request.method == 'PATCH':
-            serializer = AdminSerializer(
-                request.user, data=request.data, partial=True
-            )
+            serializer = self.get_serializer(
+                request.user, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
-        detail=False, methods=['post'],
-        permission_classes=(IsAuthenticated,)
-    )
-    def users_create(self, request):
-        """Создание нового пользователя"""
-        serializer = AdminSerializer(
-            request.user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -68,11 +57,16 @@ class UserViewSet(viewsets.ModelViewSet):
 @permission_classes([AllowAny])
 def register(request):
     """Отправка и создание кода"""
-    serializer = UserSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = serializer.save()
-    send_confirmation_code(user)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    if User.objects.filter(
+            username=request.data.get('username'),
+            email=request.data.get('email')).exists():
+        return Response(status=status.HTTP_200_OK)
+    serializer = RegisterSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        send_confirmation_code(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
