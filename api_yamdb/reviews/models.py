@@ -7,6 +7,7 @@ from users.models import User
 HEADER_LENGTH = 50
 SCORE_MIN = 1
 SCORE_MAX = 10
+CHOICES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
 
 class Categories(models.Model):
@@ -120,7 +121,7 @@ class Review(models.Model):
      Отзывы, к произведениям.
      Пользователь может оставить только один отзыв на произведение.
     """
-    title = models.OneToOneField(
+    title = models.ForeignKey(
         Titles,
         on_delete=models.CASCADE,
         verbose_name='Название произведения',
@@ -147,7 +148,7 @@ class Review(models.Model):
 
     class Meta:
         default_related_name = 'reviews'
-        ordering = ('-pub_date',)
+        ordering = ('id',)
 
     def __str__(self):
         return self.text[:HEADER_LENGTH]
@@ -178,7 +179,7 @@ class Comment(models.Model):
 
     class Meta:
         default_related_name = 'comments'
-        ordering = ('-pub_date',)
+        ordering = ('id',)
 
     def __str__(self):
         return self.text[:HEADER_LENGTH]
