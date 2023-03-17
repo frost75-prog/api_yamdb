@@ -16,6 +16,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         max_length=256,
         required=True,
+        validators=[UniqueValidator(queryset=Categories.objects.all())]
     )
     slug = serializers.SlugField(
         max_length=50,
@@ -50,6 +51,7 @@ class GenreSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         max_length=256,
         required=True,
+        validators=[UniqueValidator(queryset=Genres.objects.all())]
     )
     slug = serializers.SlugField(
         max_length=50,
@@ -64,7 +66,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
         """Кастомный валидатор для поля name."""
-        if len(value) >= 256:
+        if len(value) > 256:
             raise serializers.ValidationError('Invalid slug!')
         return value
 
@@ -72,7 +74,7 @@ class GenreSerializer(serializers.ModelSerializer):
         """Кастомный валидатор для поля slug."""
         if not REGEX_SLUG.match(value):
             raise serializers.ValidationError('Invalid slug!')
-        elif len(value) >= 50:
+        elif len(value) > 50:
             raise serializers.ValidationError('Invalid slug!')
         return value
 
@@ -84,18 +86,16 @@ class TitleSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         max_length=256,
         required=True,
+        validators=[UniqueValidator(queryset=Titles.objects.all())]
     )
     year = serializers.IntegerField(
         required=True,
+        validators=[UniqueValidator(queryset=Titles.objects.all())]
     )
-    genre = serializers.SlugRelatedField(
-        queryset=Genres.objects.all(),
-        slug_field='slug',
-        many=True,
-    )
-    category = serializers.SlugRelatedField(
-        queryset=Categories.objects.all(),
-        slug_field='slug',
+    category = CategoriesSerializer(read_only=True)
+    genre = GenreSerializer(
+        read_only=True,
+        many=True
     )
 
     class Meta:
