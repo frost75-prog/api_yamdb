@@ -7,6 +7,7 @@ from users.models import User
 HEADER_LENGTH = 50
 SCORE_MIN = 1
 SCORE_MAX = 10
+CHOICES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
 
 class Categories(models.Model):
@@ -147,7 +148,6 @@ class Review(models.Model):
 
     class Meta:
         default_related_name = 'reviews'
-        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.text[:HEADER_LENGTH]
@@ -178,7 +178,6 @@ class Comment(models.Model):
 
     class Meta:
         default_related_name = 'comments'
-        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.text[:HEADER_LENGTH]

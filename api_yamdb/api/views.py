@@ -5,14 +5,14 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 
-from reviews.models import Categories, Genres, Titles
+from reviews.models import Categories, Genres, Titles, Review
 
 from .permissions import IsAccountAdminOrReadOnly
 from .serializers import (
     CategoriesSerializer,
     GenreSerializer,
     TitleSerializer,
-    ReviewSerializer,
+    ReviewSerializer, CommentSerializer,
 )
 
 
@@ -188,4 +188,30 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(
             author=self.request.user,
             post=self._title
+        )
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet для модели Comment.
+    """
+    serializer_class = CommentSerializer
+
+    # def get_title(self):
+    #     return get_object_or_404(Titles, id=self.kwargs.get("title_id"))
+
+    @property
+    def _review(self):
+        return get_object_or_404(
+            Review,
+            id=self.kwargs.get("review_id")
+        )
+
+    def get_queryset(self):
+        return self._review.comments.all()
+
+    def perform_create(self, serializer):
+        serializer.save(
+            author=self.request.user,
+            post=self._review,
         )
