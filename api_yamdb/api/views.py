@@ -5,19 +5,19 @@ from rest_framework.pagination import PageNumberPagination
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from reviews.models import Categories, Genres, Titles, Review
+from reviews.models import Category, Genre, Title, Review
 
 from .permissions import IsAccountAdminOrReadOnly
 from .filter import TitleFilter
 from .serializers import (
-    CategoriesSerializer,
+    CategorySerializer,
     GenreSerializer,
     TitleSerializer,
     ReviewSerializer, CommentSerializer,
 )
 
 
-class CategoriesViewSet(
+class CategoryViewSet(
         mixins.ListModelMixin,
         mixins.CreateModelMixin,
         mixins.DestroyModelMixin,
@@ -25,8 +25,8 @@ class CategoriesViewSet(
     """
     ViewSet для модели Categories.
     """
-    queryset = Categories.objects.all()
-    serializer_class = CategoriesSerializer
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
     pagination_class = PageNumberPagination
     permission_classes = (IsAccountAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -42,7 +42,7 @@ class GenresViewSet(
     """
     ViewSet для модели Genres.
     """
-    queryset = Genres.objects.all()
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     pagination_class = PageNumberPagination
     permission_classes = (IsAccountAdminOrReadOnly,)
@@ -55,7 +55,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     """
     ViewSet для модели Titles.
     """
-    queryset = Titles.objects.all()
+    queryset = Title.objects.all()
     serializer_class = TitleSerializer
     pagination_class = PageNumberPagination
     permission_classes = (IsAccountAdminOrReadOnly,)
@@ -71,7 +71,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     @property
     def _title(self):
-        return get_object_or_404(Titles, id=self.kwargs.get("title_id"))
+        return get_object_or_404(Title, id=self.kwargs.get("title_id"))
 
     def get_queryset(self):
         return self._title.reviews.all()

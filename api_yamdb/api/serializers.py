@@ -4,31 +4,31 @@ from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueValidator
 
-from reviews.models import Categories, Genres, Titles, Review, Comment, \
+from reviews.models import Category, Genre, Title, Review, Comment, \
     SCORE_MIN, SCORE_MAX, CHOICES
 
 from api_yamdb.settings import REGEX_SLUG
 
 
-class CategoriesSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
     """
     Сериализер для модели Categories.
     """
     name = serializers.CharField(
         max_length=256,
         required=True,
-        validators=[UniqueValidator(queryset=Categories.objects.all())]
+        validators=[UniqueValidator(queryset=Category.objects.all())]
     )
     slug = serializers.SlugField(
         max_length=50,
         required=True,
-        validators=[UniqueValidator(queryset=Categories.objects.all())]
+        validators=[UniqueValidator(queryset=Category.objects.all())]
     )
     lookup_field = 'slug'
 
     class Meta:
         """Метаданные."""
-        model = Categories
+        model = Category
         fields = '__all__'
 
     def validate_name(self, value):
@@ -53,18 +53,18 @@ class GenreSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         max_length=256,
         required=True,
-        validators=[UniqueValidator(queryset=Genres.objects.all())]
+        validators=[UniqueValidator(queryset=Genre.objects.all())]
     )
     slug = serializers.SlugField(
         max_length=50,
         required=True,
-        validators=[UniqueValidator(queryset=Genres.objects.all())]
+        validators=[UniqueValidator(queryset=Genre.objects.all())]
     )
     lookup_field = 'slug'
 
     class Meta:
         """Метаданные."""
-        model = Genres
+        model = Genre
         fields = '__all__'
 
     def validate_name(self, value):
@@ -89,13 +89,13 @@ class TitleSerializer(serializers.ModelSerializer):
     name = serializers.CharField(
         max_length=256,
         required=True,
-        validators=[UniqueValidator(queryset=Titles.objects.all())]
+        validators=[UniqueValidator(queryset=Title.objects.all())]
     )
     year = serializers.IntegerField(
         required=True,
-        validators=[UniqueValidator(queryset=Titles.objects.all())]
+        validators=[UniqueValidator(queryset=Title.objects.all())]
     )
-    category = CategoriesSerializer(read_only=True)
+    category = CategorySerializer(read_only=True)
     genre = GenreSerializer(
         read_only=True,
         many=True
@@ -103,7 +103,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         """Метаданные."""
-        model = Titles
+        model = Title
         fields = '__all__'
 
     def validate_name(self, value):
@@ -165,7 +165,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         Валидатор на один юзер-один отзыв на произведение.
         """
         title_id = self.context.get('view').kwargs.get('title_id')
-        title = get_object_or_404(Titles, pk=title_id)
+        title = get_object_or_404(Title, pk=title_id)
         author = self.context['request'].user
         if self.context['request'].method == 'POST':
             if Review.objects.filter(title=title, author=author).exists():
@@ -177,7 +177,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         review = Review.objects.create(
             title=get_object_or_404(
-                Titles,
+                Title,
                 pk=self.context.get('view').kwargs.get('title_id')
             ),
             text=validated_data.get('text'),
