@@ -1,21 +1,17 @@
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Avg
+
 from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import PageNumberPagination
-# from rest_framework.permissions import
+from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly)
 
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from reviews.models import Category, Genre, Review, Title
 
-from reviews.models import Category, Genre, Title, Review
-
-from .permissions import IsAccountAdminOrReadOnly
 from .filter import TitleFilter
-from .serializers import (
-    CategorySerializer,
-    GenreSerializer,
-    TitleSerializer,
-    ReviewSerializer, CommentSerializer,
-)
+from .permissions import IsAccountAdminOrReadOnly
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer, TitleSerializer)
 
 
 class CategoryViewSet(
@@ -56,11 +52,12 @@ class TitleViewSet(viewsets.ModelViewSet):
     """
     ViewSet для модели Titles.
     """
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).all()
     serializer_class = TitleSerializer
-    pagination_class = PageNumberPagination
-    permission_classes = (IsAccountAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
+    permission_classes = (IsAccountAdminOrReadOnly, )
+    filter_backends = (DjangoFilterBackend,)
     filter_class = TitleFilter
 
 
