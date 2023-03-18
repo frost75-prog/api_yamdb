@@ -1,6 +1,6 @@
 from django_filters.rest_framework import CharFilter, FilterSet, NumberFilter
 
-from reviews.models import Titles
+from reviews.models import Title
 
 
 class TitleFilter(FilterSet):
@@ -16,5 +16,5 @@ class TitleFilter(FilterSet):
         """
         Метаданные.
         """
-        model = Titles
+        model = Title
         fields = '__all__'

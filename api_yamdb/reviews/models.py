@@ -10,7 +10,7 @@ SCORE_MAX = 10
 CHOICES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
 
-class Categories(models.Model):
+class Category(models.Model):
     """
     Категории (типы) произведений («Фильмы», «Книги», «Музыка»).
     Одно произведение может быть привязано только к одной категории.
@@ -38,7 +38,7 @@ class Categories(models.Model):
         return str(self.name)[:HEADER_LENGTH]
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     """
     Жанры произведений.
     Одно произведение может быть привязано к нескольким жанрам.
@@ -66,7 +66,7 @@ class Genres(models.Model):
         return str(self.name)[:HEADER_LENGTH]
 
 
-class Titles(models.Model):
+class Title(models.Model):
     """
     Произведения, к которым пишут отзывы,
     (определённый фильм, книга или песенка).
@@ -87,7 +87,7 @@ class Titles(models.Model):
         blank=True,
     )
     genre = models.ForeignKey(
-        Genres,
+        Genre,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -96,7 +96,7 @@ class Titles(models.Model):
         related_name='genre',
     )
     category = models.OneToOneField(
-        Categories,
+        Category,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -122,7 +122,7 @@ class Review(models.Model):
      Пользователь может оставить только один отзыв на произведение.
     """
     title = models.ForeignKey(
-        Titles,
+        Title,
         on_delete=models.CASCADE,
         verbose_name='Название произведения',
     )
