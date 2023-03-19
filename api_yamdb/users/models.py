@@ -5,11 +5,16 @@ from api_yamdb.settings import REGEX_USER
 
 
 def username_not_correct(value):
+    """
+    Метод проверки username на корректность.
+    """
     return not REGEX_USER.match(value) or value.lower() == 'me'
 
 
 class MyUserManager(UserManager):
-
+    """
+    Кастомный менеджер для создания юзеров.
+    """
     def create_user(self, username, email, password, **extra_fields):
         if not email:
             raise ValueError('Поле email обязательно!')
@@ -25,6 +30,9 @@ class MyUserManager(UserManager):
 
 
 class User(AbstractUser):
+    """
+    Модель для User. Параметры полей.
+    """
 
     ROLE_CHOICES = [
         ('user', 'User'),
@@ -61,8 +69,16 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
+        """
+        Свойство.
+        Возвращает права админа.
+        """
         return self.role == self.ROLE_CHOICES[2][0]
 
     @property
     def is_moderator(self):
+        """
+        Свойство.
+        Возвращает права модератора.
+        """
         return self.role == self.ROLE_CHOICES[1][0]

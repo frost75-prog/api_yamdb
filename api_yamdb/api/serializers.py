@@ -144,6 +144,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         return data
 
     class Meta:
+        """Метаданные."""
         model = Review
         fields = '__all__'
 
