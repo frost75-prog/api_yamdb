@@ -58,8 +58,8 @@ class TitleViewSet(viewsets.ModelViewSet):
         rating=Avg('reviews__score')
     ).all()
     pagination_class = PageNumberPagination
-    filter_backends = (DjangoFilterBackend,)
-    filter_class = TitleFilter
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = TitleFilter
 
     def get_permissions(self):
         if self.action == 'list' or self.action == 'retrieve':

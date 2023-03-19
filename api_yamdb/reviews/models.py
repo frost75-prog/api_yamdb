@@ -33,7 +33,6 @@ class Category(models.Model):
         """Метаданные."""
         verbose_name_plural = 'Категории'
         verbose_name = 'Категория'
-        ordering = ('id',)
 
     def __str__(self):
         return str(self.name)[:HEADER_LENGTH]
@@ -62,7 +61,6 @@ class Genre(models.Model):
         """Метаданные."""
         verbose_name_plural = 'Жанры'
         verbose_name = 'Жанр'
-        ordering = ('id',)
 
     def __str__(self):
         return str(self.name)[:HEADER_LENGTH]
@@ -109,7 +107,6 @@ class Title(models.Model):
         """Метаданные."""
         verbose_name_plural = 'Произведения'
         verbose_name = 'Произведение'
-        ordering = ('id',)
 
     def __str__(self):
         return str(self.name)[:HEADER_LENGTH]
