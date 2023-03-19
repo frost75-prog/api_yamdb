@@ -129,8 +129,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     text = serializers.CharField(
         required=True,
     )
-    score = serializers.ChoiceField(
-        choices=CHOICES,
+    score = serializers.IntegerField(
+        max_value=SCORE_MAX,
+        min_value=SCORE_MIN,
     )
 
     class Meta:
@@ -149,7 +150,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         if value not in range(SCORE_MIN, SCORE_MAX):
             raise serializers.ValidationError(
                 'Значение вне допутимого диапазона!')
-        print(value)
         return value
 
     def validate(self, data):
