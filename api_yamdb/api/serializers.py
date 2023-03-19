@@ -12,7 +12,7 @@ from api_yamdb.settings import REGEX_SLUG
 
 class CategorySerializer(serializers.ModelSerializer):
     """
-    Сериализер для модели Categories.
+    Serializer для модели Category.
     """
     name = serializers.CharField(
         max_length=256,
@@ -28,7 +28,7 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         """Метаданные."""
         model = Category
-        exclude = ('id', )
+        fields = ('name', 'slug')
         lookup_field = 'slug'
 
     def validate_name(self, value):
@@ -48,7 +48,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class GenreSerializer(CategorySerializer):
     """
-    Сериализер для модели Genres.
+    Serializer для модели Genre.
     """
     name = serializers.CharField(
         max_length=256,
@@ -64,33 +64,45 @@ class GenreSerializer(CategorySerializer):
     class Meta:
         """Метаданные."""
         model = Genre
-        exclude = ('id', )
+        fields = ('name', 'slug')
         lookup_field = 'slug'
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     """
-    Сериализер для модели Titles.
+    Serializer для модели Title.
     """
-    name = serializers.CharField(
-        max_length=256,
-        required=True,
-        validators=[UniqueValidator(queryset=Title.objects.all())]
-    )
-    year = serializers.IntegerField(
-        required=True,
-        validators=[UniqueValidator(queryset=Title.objects.all())]
-    )
-    category = CategorySerializer(read_only=True, )
+    category = CategorySerializer(read_only=True)
     genre = GenreSerializer(
         read_only=True,
+        many=True
     )
-    rating = serializers.IntegerField(read_only=True, )
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         """Метаданные."""
-        model = Title
         fields = '__all__'
+        model = Title
+
+
+class TitleWriteSerializer(serializers.ModelSerializer):
+    """
+    Serializer для модели Title.
+    """
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug'
+    )
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True
+    )
+
+    class Meta:
+        """Метаданные."""
+        fields = '__all__'
+        model = Title
 
     def validate_year(self, value):
         """
