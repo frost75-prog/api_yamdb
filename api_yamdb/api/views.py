@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, mixins, viewsets
+from rest_framework import filters, mixins, viewsets, permissions
 from rest_framework.pagination import PageNumberPagination
 # from rest_framework.permissions import
 
@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 
 from reviews.models import Category, Genre, Title, Review
 
-from .permissions import IsAccountAdminOrReadOnly
+from .permissions import IsAccountAdminOrReadOnly, IsAuthorOrReadOnly
 from .filter import TitleFilter
 from .serializers import (
     CategorySerializer,
@@ -69,7 +69,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
     ViewSet для модели Review.
     """
     serializer_class = ReviewSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (
+        IsAuthorOrReadOnly,
+        permissions.IsAuthenticatedOrReadOnly,
+    )
 
     @property
     def _title(self):
@@ -81,7 +84,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(
             author=self.request.user,
-            post=self._title
+            title=self._title
         )
 
 
@@ -90,10 +93,10 @@ class CommentViewSet(viewsets.ModelViewSet):
     ViewSet для модели Comment.
     """
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-
-    # def get_title(self):
-    #     return get_object_or_404(Titles, id=self.kwargs.get("title_id"))
+    permission_classes = (
+        IsAuthorOrReadOnly,
+        permissions.IsAuthenticatedOrReadOnly,
+    )
 
     @property
     def _review(self):
@@ -108,5 +111,5 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(
             author=self.request.user,
-            post=self._review,
+            review=self._review,
         )

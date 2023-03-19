@@ -148,7 +148,13 @@ class Review(models.Model):
 
     class Meta:
         default_related_name = 'reviews'
-        ordering = ('id',)
+        ordering = ('-pub_date',)
+        constraints = (
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='такой отзыв уже существует'
+            ),
+        )
 
     def __str__(self):
         return self.text[:HEADER_LENGTH]
@@ -179,7 +185,7 @@ class Comment(models.Model):
 
     class Meta:
         default_related_name = 'comments'
-        ordering = ('id',)
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.text[:HEADER_LENGTH]
