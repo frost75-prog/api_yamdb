@@ -1,21 +1,20 @@
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Avg
+
 from rest_framework import filters, mixins, viewsets, permissions
 from rest_framework.pagination import PageNumberPagination
-# from rest_framework.permissions import
+from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly,)
 
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
-
-from reviews.models import Category, Genre, Title, Review
+from reviews.models import Category, Genre, Review, Title
 
 from .permissions import IsAccountAdminOrReadOnly, IsAuthorOrReadOnly
 from .filter import TitleFilter
-from .serializers import (
-    CategorySerializer,
-    GenreSerializer,
-    TitleSerializer,
-    ReviewSerializer, CommentSerializer,
-)
+from .permissions import IsAccountAdminOrReadOnly
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer,
+                          TitleReadSerializer,
+                          TitleWriteSerializer,)
 
 
 class CategoryViewSet(
@@ -56,12 +55,22 @@ class TitleViewSet(viewsets.ModelViewSet):
     """
     ViewSet для модели Titles.
     """
-    queryset = Title.objects.all()
-    serializer_class = TitleSerializer
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).all()
     pagination_class = PageNumberPagination
-    permission_classes = (IsAccountAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
-    filter_class = TitleFilter
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = TitleFilter
+
+    def get_permissions(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return (AllowAny(),)
+        return (IsAccountAdminOrReadOnly(),)
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

@@ -12,12 +12,12 @@ class IsAccountAdminOrReadOnly(permissions.BasePermission):
             and request.user.is_admin)
 
 
-class ReadOnly(permissions.BasePermission):
-    """
-    Только безопасные запросы.
-    """
+class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.method in permissions.SAFE_METHODS
+        return (
+            request.user.is_authenticated
+            and request.user.is_admin
+        )
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):

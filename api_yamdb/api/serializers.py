@@ -12,7 +12,7 @@ from api_yamdb.settings import REGEX_SLUG
 
 class CategorySerializer(serializers.ModelSerializer):
     """
-    Сериализер для модели Categories.
+    Serializer для модели Category.
     """
     name = serializers.CharField(
         max_length=256,
@@ -24,12 +24,12 @@ class CategorySerializer(serializers.ModelSerializer):
         required=True,
         validators=[UniqueValidator(queryset=Category.objects.all())]
     )
-    lookup_field = 'slug'
 
     class Meta:
         """Метаданные."""
         model = Category
-        fields = '__all__'
+        fields = ('name', 'slug')
+        lookup_field = 'slug'
 
     def validate_name(self, value):
         """Кастомный валидатор для поля name."""
@@ -46,9 +46,9 @@ class CategorySerializer(serializers.ModelSerializer):
         return value
 
 
-class GenreSerializer(serializers.ModelSerializer):
+class GenreSerializer(CategorySerializer):
     """
-    Сериализер для модели Genres.
+    Serializer для модели Genre.
     """
     name = serializers.CharField(
         max_length=256,
@@ -60,57 +60,49 @@ class GenreSerializer(serializers.ModelSerializer):
         required=True,
         validators=[UniqueValidator(queryset=Genre.objects.all())]
     )
-    lookup_field = 'slug'
 
     class Meta:
         """Метаданные."""
         model = Genre
-        fields = '__all__'
-
-    def validate_name(self, value):
-        """Кастомный валидатор для поля name."""
-        if len(value) > 256:
-            raise serializers.ValidationError('Invalid slug!')
-        return value
-
-    def validate_slug(self, value):
-        """Кастомный валидатор для поля slug."""
-        if not REGEX_SLUG.match(value):
-            raise serializers.ValidationError('Invalid slug!')
-        elif len(value) > 50:
-            raise serializers.ValidationError('Invalid slug!')
-        return value
+        fields = ('name', 'slug')
+        lookup_field = 'slug'
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     """
-    Сериализер для модели Titles.
+    Serializer для модели Title.
     """
-    name = serializers.CharField(
-        max_length=256,
-        required=True,
-        validators=[UniqueValidator(queryset=Title.objects.all())]
-    )
-    year = serializers.IntegerField(
-        required=True,
-        validators=[UniqueValidator(queryset=Title.objects.all())]
-    )
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(
         read_only=True,
-        # many=True
+        many=True
+    )
+    rating = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        """Метаданные."""
+        fields = '__all__'
+        model = Title
+
+
+class TitleWriteSerializer(serializers.ModelSerializer):
+    """
+    Serializer для модели Title.
+    """
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug'
+    )
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True
     )
 
     class Meta:
         """Метаданные."""
-        model = Title
         fields = '__all__'
-
-    def validate_name(self, value):
-        """Кастомный валидатор для поля name."""
-        if len(value) > 256:
-            raise serializers.ValidationError('Invalid slug!')
-        return value
+        model = Title
 
     def validate_year(self, value):
         """
