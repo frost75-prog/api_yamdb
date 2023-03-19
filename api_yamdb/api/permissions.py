@@ -25,7 +25,6 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
     Права автора или администратора.
     Доступны безопасные методы HTTP.
     """
-
     def has_object_permission(self, request, view, obj):
         return (request.method in permissions.SAFE_METHODS
                 or request.user.is_admin

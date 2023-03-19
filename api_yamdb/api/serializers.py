@@ -137,8 +137,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         read_only_fields = (
-            'author',
-            'pub_date',
+            # 'author',
+            # 'pub_date',
             'title',
         )
 
