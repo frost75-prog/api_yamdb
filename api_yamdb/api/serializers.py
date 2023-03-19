@@ -167,17 +167,17 @@ class ReviewSerializer(serializers.ModelSerializer):
                 )
         return data
 
-    def create(self, validated_data):
-        review = Review.objects.create(
-            title=get_object_or_404(
-                Title,
-                pk=self.context.get('view').kwargs.get('title_id')
-            ),
-            text=validated_data.get('text'),
-            author=self.context['request'].user,
-            score=validated_data.get('score'),
-        )
-        return review
+    # def create(self, validated_data):
+    #     review = Review.objects.create(
+    #         title=get_object_or_404(
+    #             Title,
+    #             pk=self.context.get('view').kwargs.get('title_id')
+    #         ),
+    #         text=validated_data.get('text'),
+    #         author=self.context['request'].user,
+    #         score=validated_data.get('score'),
+    #     )
+    #     return review
 
 
 class CommentSerializer(serializers.ModelSerializer):

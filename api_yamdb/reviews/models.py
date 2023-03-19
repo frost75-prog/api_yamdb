@@ -31,6 +31,7 @@ class Category(models.Model):
 
     class Meta:
         """Метаданные."""
+        ordering = ('id',)
         verbose_name_plural = 'Категории'
         verbose_name = 'Категория'
 
@@ -59,6 +60,7 @@ class Genre(models.Model):
 
     class Meta:
         """Метаданные."""
+        ordering = ('id',)
         verbose_name_plural = 'Жанры'
         verbose_name = 'Жанр'
 
@@ -105,6 +107,7 @@ class Title(models.Model):
 
     class Meta:
         """Метаданные."""
+        ordering = ('id',)
         verbose_name_plural = 'Произведения'
         verbose_name = 'Произведение'
 
