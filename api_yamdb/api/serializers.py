@@ -5,7 +5,6 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Genre, Title, Review, Comment
-
 from api_yamdb.settings import REGEX_SLUG
 
 
