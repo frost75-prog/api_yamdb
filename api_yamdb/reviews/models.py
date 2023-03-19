@@ -31,6 +31,7 @@ class Category(models.Model):
 
     class Meta:
         """Метаданные."""
+        ordering = ('id',)
         verbose_name_plural = 'Категории'
         verbose_name = 'Категория'
 
@@ -59,6 +60,7 @@ class Genre(models.Model):
 
     class Meta:
         """Метаданные."""
+        ordering = ('id',)
         verbose_name_plural = 'Жанры'
         verbose_name = 'Жанр'
 
@@ -105,6 +107,7 @@ class Title(models.Model):
 
     class Meta:
         """Метаданные."""
+        ordering = ('id',)
         verbose_name_plural = 'Произведения'
         verbose_name = 'Произведение'
 
@@ -144,7 +147,7 @@ class Review(models.Model):
 
     class Meta:
         default_related_name = 'reviews'
-        ordering = ('-pub_date',)
+        ordering = ('id',)
         constraints = (
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -181,7 +184,7 @@ class Comment(models.Model):
 
     class Meta:
         default_related_name = 'comments'
-        ordering = ('-pub_date',)
+        ordering = ('id',)
 
     def __str__(self):
         return self.text[:HEADER_LENGTH]

@@ -1,20 +1,18 @@
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Avg
-
-from rest_framework import filters, mixins, viewsets, permissions
+from rest_framework import filters, mixins, permissions, viewsets
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly,)
-
+from rest_framework.permissions import AllowAny
 from reviews.models import Category, Genre, Review, Title
 
-from .permissions import IsAccountAdminOrReadOnly, IsAuthorOrReadOnly
 from .filter import TitleFilter
-from .permissions import IsAccountAdminOrReadOnly
+from .permissions import (IsAccountAdminOrReadOnly,
+                          IsAuthorOrAdministratorOrReadOnly,
+                          IsAuthorOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
-                          TitleReadSerializer,
-                          TitleWriteSerializer,)
+                          TitleReadSerializer, TitleWriteSerializer)
 
 
 class CategoryViewSet(
@@ -57,7 +55,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     """
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    ).all()
+    ).all().order_by('name')
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
@@ -74,14 +72,9 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet для модели Review.
-    """
+    """POST для всех авторизованных, PATCH для модеров, админов и автора."""
     serializer_class = ReviewSerializer
-    permission_classes = (
-        IsAuthorOrReadOnly,
-        permissions.IsAuthenticatedOrReadOnly,
-    )
+    permission_classes = (IsAuthorOrAdministratorOrReadOnly,)
 
     @property
     def _title(self):
@@ -91,10 +84,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return self._title.reviews.all()
 
     def perform_create(self, serializer):
-        serializer.save(
-            author=self.request.user,
-            title=self._title
-        )
+        serializer.save(title=self._title, author=self.request.user)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
