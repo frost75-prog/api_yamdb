@@ -57,7 +57,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     """
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    ).all()
+    ).all().order_by('name')
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilter
