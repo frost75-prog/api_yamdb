@@ -23,6 +23,7 @@ class Category(models.Model):
     slug = models.SlugField(
         max_length=50,
         unique=True,
+        db_index=True,
         verbose_name='Слаг-индентификатор',
         help_text='Введите slug-идентификатор',
     )
@@ -32,7 +33,6 @@ class Category(models.Model):
         """Метаданные."""
         verbose_name_plural = 'Категории'
         verbose_name = 'Категория'
-        ordering = ('id',)
 
     def __str__(self):
         return str(self.name)[:HEADER_LENGTH]
@@ -51,6 +51,7 @@ class Genre(models.Model):
     slug = models.SlugField(
         max_length=50,
         unique=True,
+        db_index=True,
         verbose_name='Слаг-индентификатор',
         help_text='Введите slug-идентификатор',
     )
@@ -60,7 +61,6 @@ class Genre(models.Model):
         """Метаданные."""
         verbose_name_plural = 'Жанры'
         verbose_name = 'Жанр'
-        ordering = ('id',)
 
     def __str__(self):
         return str(self.name)[:HEADER_LENGTH]
@@ -80,29 +80,26 @@ class Title(models.Model):
         verbose_name='Год выпуска',
         help_text='Введите год выпуска произведения',
     )
-    description = models.TextField(
-        verbose_name='Описание',
-        help_text='Введите описание',
-        null=True,
-        blank=True,
-    )
-    genre = models.ForeignKey(
-        Genre,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        verbose_name='Жанр произведения',
-        help_text='Выберите жанр',
-        related_name='genre',
-    )
-    category = models.OneToOneField(
+    category = models.ForeignKey(
         Category,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         verbose_name='Категория произведения',
         help_text='Выберите категорию',
-        related_name='category',
+        related_name='titles',
+    )
+    description = models.TextField(
+        verbose_name='Описание',
+        help_text='Введите описание',
+        null=True,
+        blank=True,
+    )
+    genre = models.ManyToManyField(
+        Genre,
+        verbose_name='Жанр произведения',
+        help_text='Выберите жанр',
+        related_name='titles',
     )
     objects = models.Manager()
 
@@ -110,7 +107,6 @@ class Title(models.Model):
         """Метаданные."""
         verbose_name_plural = 'Произведения'
         verbose_name = 'Произведение'
-        ordering = ('id',)
 
     def __str__(self):
         return str(self.name)[:HEADER_LENGTH]

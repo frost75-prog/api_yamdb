@@ -4,14 +4,16 @@ from django.db.models import Avg
 
 from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (AllowAny, IsAuthenticatedOrReadOnly,)
 
 from reviews.models import Category, Genre, Review, Title
 
 from .filter import TitleFilter
 from .permissions import IsAccountAdminOrReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReviewSerializer, TitleSerializer)
+                          GenreSerializer, ReviewSerializer,
+                          TitleReadSerializer,
+                          TitleWriteSerializer,)
 
 
 class CategoryViewSet(
@@ -55,10 +57,19 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
     ).all()
-    serializer_class = TitleSerializer
-    permission_classes = (IsAccountAdminOrReadOnly, )
-    filter_backends = (DjangoFilterBackend,)
-    filter_class = TitleFilter
+    pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = TitleFilter
+
+    def get_permissions(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return (AllowAny(),)
+        return (IsAccountAdminOrReadOnly(),)
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
