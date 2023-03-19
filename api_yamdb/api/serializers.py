@@ -127,13 +127,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True
     )
-    text = serializers.CharField(
-        required=True,
-    )
-    score = serializers.IntegerField(
-        max_value=SCORE_MAX,
-        min_value=SCORE_MIN,
-    )
+    # score = serializers.IntegerField(
+    #     max_value=SCORE_MAX,
+    #     min_value=SCORE_MIN,
+    # )
 
     class Meta:
         """Метаданные."""
@@ -188,9 +185,9 @@ class CommentSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True
     )
-    text = serializers.CharField(
-        required=True,
-    )
+    # text = serializers.CharField(
+    #     required=True,
+    # )
 
     class Meta:
         """Метаданные."""
@@ -202,13 +199,13 @@ class CommentSerializer(serializers.ModelSerializer):
             'review',
         )
 
-    def create(self, validated_data):
-        comment = Comment.objects.create(
-            review=get_object_or_404(
-                Review,
-                pk=self.context.get('view').kwargs.get('review_id')
-            ),
-            text=validated_data.get('text'),
-            author=self.context['request'].user,
-        )
-        return comment
+    # def create(self, validated_data):
+    #     comment = Comment.objects.create(
+    #         review=get_object_or_404(
+    #             Review,
+    #             pk=self.context.get('view').kwargs.get('review_id')
+    #         ),
+    #         text=validated_data.get('text'),
+    #         author=self.context['request'].user,
+    #     )
+    #     return comment
