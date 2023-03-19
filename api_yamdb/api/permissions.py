@@ -13,6 +13,9 @@ class IsAccountAdminOrReadOnly(permissions.BasePermission):
 
 
 class IsAdmin(permissions.BasePermission):
+    """
+    Права администратора.
+    """
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
@@ -32,6 +35,10 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
 
 
 class IsAuthorOrAdministratorOrReadOnly(permissions.BasePermission):
+    """
+    Права автора или администратора.
+    Доступны безопасные методы HTTP.
+    """
     def has_object_permission(self, request, view, obj):
         return (request.method in permissions.SAFE_METHODS
                 or request.user.is_admin

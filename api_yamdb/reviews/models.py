@@ -146,6 +146,7 @@ class Review(models.Model):
     )
 
     class Meta:
+        """Метаданные."""
         default_related_name = 'reviews'
         ordering = ('id',)
         constraints = (
@@ -156,7 +157,7 @@ class Review(models.Model):
         )
 
     def __str__(self):
-        return self.text[:HEADER_LENGTH]
+        return str(self.text)[:HEADER_LENGTH]
 
 
 class Comment(models.Model):
@@ -183,8 +184,9 @@ class Comment(models.Model):
     )
 
     class Meta:
+        """Метаданные."""
         default_related_name = 'comments'
         ordering = ('id',)
 
     def __str__(self):
-        return self.text[:HEADER_LENGTH]
+        return str(self.text)[:HEADER_LENGTH]
