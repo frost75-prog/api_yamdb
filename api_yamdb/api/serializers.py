@@ -122,6 +122,10 @@ class ReviewSerializer(serializers.ModelSerializer):
     """
     Сериалайзер для модели Review.
     """
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True,
+    )
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
@@ -135,12 +139,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         """Метаданные."""
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
-        read_only_fields = (
-            # 'author',
-            # 'pub_date',
-            'title',
-        )
+        fields = '__all__'
+        # fields = ('id', 'text', 'author', 'score', 'pub_date')
+        # read_only_fields = (
+        #     # 'author',
+        #     # 'pub_date',
+        #     'title',
+        # )
 
     def validate_score(self, value):
         """Кастомный валидатор для поля score."""
