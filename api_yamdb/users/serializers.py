@@ -1,7 +1,9 @@
-from rest_framework import exceptions, serializers
+from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from .models import User, username_not_correct
+from api_yamdb.settings import MAX_LENGTH_EMAIL, MAX_LENGTH_USERNAME
+from .models import MAX_LENGTH_ROLES, User
+from .validators import validate_username
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
@@ -9,11 +11,12 @@ class AdminUserSerializer(serializers.ModelSerializer):
     Serializer для модели User.
     """
     username = serializers.CharField(
-        validators=[UniqueValidator(queryset=User.objects.all())
-                    ], max_length=150, required=True,)
+        validators=[UniqueValidator(queryset=User.objects.all()),
+                    validate_username
+                    ], max_length=MAX_LENGTH_USERNAME, required=True,)
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=User.objects.all())
-                    ], max_length=254, required=True,)
+                    ], max_length=MAX_LENGTH_EMAIL, required=True,)
 
     class Meta:
         """
@@ -23,22 +26,12 @@ class AdminUserSerializer(serializers.ModelSerializer):
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role')
 
-    def validate_username(self, value):
-        """
-        Валидация username.
-        Корректность полей.
-        """
-        if username_not_correct(value):
-            raise serializers.ValidationError('Invalid username!')
-        return value
-
 
 class UserSerializer(AdminUserSerializer):
     """
     Serializer для модели User.
-    Дочерний класс.
     """
-    role = serializers.CharField(max_length=9, read_only=True)
+    role = serializers.CharField(max_length=MAX_LENGTH_ROLES, read_only=True)
 
 
 class RegisterSerializer(AdminUserSerializer):
@@ -53,20 +46,16 @@ class RegisterSerializer(AdminUserSerializer):
         fields = ('username', 'email',)
 
 
-class TokenSerializer(serializers.Serializer):
+class TokenSerializer(AdminUserSerializer):
     """
     Serializer для токена.
     """
-    username = serializers.CharField(max_length=150, required=True)
-    confirmation_code = serializers.CharField(max_length=150, required=True)
+    confirmation_code = serializers.CharField(
+        max_length=MAX_LENGTH_USERNAME, required=True)
 
-    def validate_username(self, value):
+    class Meta:
         """
-        Валидация username.
-        Корректность полей.
+        Метаданные.
         """
-        if username_not_correct(value):
-            raise serializers.ValidationError('Invalid username!')
-        if not User.objects.filter(username=value).exists():
-            raise exceptions.NotFound('User not found!')
-        return value
+        model = User
+        fields = ('username', 'confirmation_code',)
