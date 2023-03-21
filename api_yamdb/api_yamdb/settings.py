@@ -114,6 +114,8 @@ DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 DEFAULT_SUBJECT_EMAIL = 'Код подтверждения на сервисе YaMDb'
 DEFAULT_TEXT_EMAIL = '{} - ваш код авторизации на сервисе YaMDb'
 
+MAX_NAME_LENGTH = 256
+MAX_SLUG_NAME = 50
 MAX_LENGTH_USERNAME = 150
 MAX_LENGTH_EMAIL = 254
 
