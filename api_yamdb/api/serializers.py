@@ -122,33 +122,20 @@ class ReviewSerializer(serializers.ModelSerializer):
     """
     Сериалайзер для модели Review.
     """
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True,
+    )
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
         read_only=True
     )
-    # score = serializers.IntegerField(
-    #     max_value=SCORE_MAX,
-    #     min_value=SCORE_MIN,
-    # )
 
     class Meta:
         """Метаданные."""
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
-        read_only_fields = (
-            # 'author',
-            # 'pub_date',
-            'title',
-        )
-
-    def validate_score(self, value):
-        """Кастомный валидатор для поля score."""
-        value = int(value)
-        if value not in range(SCORE_MIN, SCORE_MAX):
-            raise serializers.ValidationError(
-                'Значение вне допутимого диапазона!')
-        return value
+        fields = ('__all__')
 
     def validate(self, data):
         """
@@ -163,18 +150,6 @@ class ReviewSerializer(serializers.ModelSerializer):
                     'Вы не можете оставить второй отзыв на произведение.'
                 )
         return data
-
-    # def create(self, validated_data):
-    #     review = Review.objects.create(
-    #         title=get_object_or_404(
-    #             Title,
-    #             pk=self.context.get('view').kwargs.get('title_id')
-    #         ),
-    #         text=validated_data.get('text'),
-    #         author=self.context['request'].user,
-    #         score=validated_data.get('score'),
-    #     )
-    #     return review
 
 
 class CommentSerializer(serializers.ModelSerializer):
