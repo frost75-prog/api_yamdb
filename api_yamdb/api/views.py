@@ -80,7 +80,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (
         IsAuthorOrReadOnly,
-        permissions.IsAuthenticatedOrReadOnly,
     )
 
     @property
@@ -104,7 +103,6 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
         IsAuthorOrReadOnly,
-        permissions.IsAuthenticatedOrReadOnly,
     )
 
     @property
