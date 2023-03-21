@@ -2,8 +2,8 @@ from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueValidator
 
-from reviews.models import Category, Genre, Title, Review, Comment, SCORE_MAX, \
-    SCORE_MIN
+from reviews.models import (SCORE_MAX, SCORE_MIN, Category, Comment, Genre,
+                            Review, Title)
 from api_yamdb.settings import MAX_NAME_LENGTH, MAX_SLUG_NAME
 
 
