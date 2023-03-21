@@ -1,10 +1,9 @@
-from django.contrib.auth.tokens import default_token_generator as tg
+from django.contrib.auth.tokens import \
+    default_token_generator as token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
@@ -20,7 +19,8 @@ from .serializers import (AdminUserSerializer, RegisterSerializer,
 def send_confirmation_code(user):
     """Отправка кода на почту"""
     return send_mail(DEFAULT_SUBJECT_EMAIL,
-                     DEFAULT_TEXT_EMAIL.format(tg.make_token(user)),
+                     DEFAULT_TEXT_EMAIL.format(
+                         token_generator.make_token(user)),
                      DEFAULT_FROM_EMAIL,
                      [user.email])
 
@@ -34,22 +34,24 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
     search_fields = ('username',)
-    pagination_class = PageNumberPagination
 
     @action(
-        detail=False, methods=['get', 'patch'],
-        url_path='me', url_name='me',
+        detail=False,
+        methods=['get', 'patch'],
+        url_path='me',
+        url_name='me',
         permission_classes=(IsAuthenticated,),
         serializer_class=UserSerializer
     )
     def users_profile(self, request):
         """Профайл пользователя"""
         serializer = self.get_serializer(request.user)
-        if request.method == 'PATCH':
-            serializer = self.get_serializer(
-                request.user, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+        if request.method == 'GET':
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(
+            request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -62,11 +64,10 @@ def register(request):
             email=request.data.get('email')).exists():
         return Response(status=status.HTTP_200_OK)
     serializer = RegisterSerializer(data=request.data)
-    if serializer.is_valid():
-        user = serializer.save()
-        send_confirmation_code(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.save()
+    send_confirmation_code(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -74,10 +75,10 @@ def register(request):
 def token(request):
     """Получаем токен"""
     serializer = TokenSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception=True)
     user = get_object_or_404(User, username=serializer.data['username'])
-    if not tg.check_token(user, serializer.data['confirmation_code']):
+    if not token_generator.check_token(
+            user, serializer.data['confirmation_code']):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     token = AccessToken.for_user(user)
     return Response(

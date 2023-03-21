@@ -104,13 +104,20 @@ STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
 PAGINATOR_PAGE = 30
 
-REGEX_USER = re.compile(r'^[\w.@+-]+\Z')
+REGEX_USER = re.compile(r'^(?!me$)[\w.@+-]+\Z')
 REGEX_SLUG = re.compile(r'^[-a-zA-Z0-9_]+$')
+
+API_VERSION_SLUG = 'v1/'
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 DEFAULT_SUBJECT_EMAIL = 'Код подтверждения на сервисе YaMDb'
 DEFAULT_TEXT_EMAIL = '{} - ваш код авторизации на сервисе YaMDb'
+
+MAX_NAME_LENGTH = 256
+MAX_SLUG_NAME = 50
+MAX_LENGTH_USERNAME = 150
+MAX_LENGTH_EMAIL = 254
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [

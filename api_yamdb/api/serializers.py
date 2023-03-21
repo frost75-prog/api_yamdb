@@ -1,11 +1,10 @@
-from datetime import datetime
-
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueValidator
 
-from reviews.models import Category, Genre, Title, Review, Comment
-from api_yamdb.settings import REGEX_SLUG
+from reviews.models import Category, Genre, Title, Review, Comment, SCORE_MAX, \
+    SCORE_MIN
+from api_yamdb.settings import MAX_NAME_LENGTH, MAX_SLUG_NAME
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -13,12 +12,12 @@ class CategorySerializer(serializers.ModelSerializer):
     Serializer для модели Category.
     """
     name = serializers.CharField(
-        max_length=256,
+        max_length=MAX_NAME_LENGTH,
         required=True,
         validators=[UniqueValidator(queryset=Category.objects.all())]
     )
     slug = serializers.SlugField(
-        max_length=50,
+        max_length=MAX_SLUG_NAME,
         required=True,
         validators=[UniqueValidator(queryset=Category.objects.all())]
     )
@@ -29,32 +28,18 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
         lookup_field = 'slug'
 
-    def validate_name(self, value):
-        """Кастомный валидатор для поля name."""
-        if len(value) > 256:
-            raise serializers.ValidationError('Invalid slug!')
-        return value
-
-    def validate_slug(self, value):
-        """Кастомный валидатор для поля slug."""
-        if not REGEX_SLUG.match(value):
-            raise serializers.ValidationError('Invalid slug!')
-        elif len(value) > 50:
-            raise serializers.ValidationError('Invalid slug!')
-        return value
-
 
 class GenreSerializer(CategorySerializer):
     """
     Serializer для модели Genre.
     """
     name = serializers.CharField(
-        max_length=256,
+        max_length=MAX_NAME_LENGTH,
         required=True,
         validators=[UniqueValidator(queryset=Genre.objects.all())]
     )
     slug = serializers.SlugField(
-        max_length=50,
+        max_length=MAX_SLUG_NAME,
         required=True,
         validators=[UniqueValidator(queryset=Genre.objects.all())]
     )
@@ -79,8 +64,11 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         """Метаданные."""
-        fields = '__all__'
+        fields = (
+            'id', 'category', 'genre', 'year', 'name', 'description', 'rating')
         model = Title
+        read_only_fields = (
+            'id', 'year', 'name', 'description',)
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -99,35 +87,23 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         """Метаданные."""
-        fields = '__all__'
+        fields = ('id', 'category', 'genre', 'year', 'name', 'description')
         model = Title
-
-    def validate_year(self, value):
-        """
-        Кастомный валидатор для поля year.
-        Год выпуска не может быть больше текущего.
-        """
-        if value > datetime.now().year:
-            raise serializers.ValidationError(
-                'Invalid year! Year must be less then current year.')
-        elif value < 0:
-            raise serializers.ValidationError(
-                'Invalid year! Year must be biggest then zero.')
-        return value
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     """
     Сериалайзер для модели Review.
     """
-    title = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True,
-    )
+
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
         read_only=True
+    )
+    score = serializers.IntegerField(
+        max_value=SCORE_MAX,
+        min_value=SCORE_MIN,
     )
 
     def validate(self, data):
@@ -145,7 +121,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         """Метаданные."""
         model = Review
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -163,7 +139,7 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         """Метаданные."""
         model = Comment
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = (
             'author',
             'pub_date',

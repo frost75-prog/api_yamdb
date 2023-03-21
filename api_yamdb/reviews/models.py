@@ -3,6 +3,8 @@ from django.db import models
 
 from users.models import User
 
+from api_yamdb.settings import MAX_NAME_LENGTH, MAX_SLUG_NAME
+from .validators import validate_year, validate_slug
 
 HEADER_LENGTH = 50
 SCORE_MIN = 1
@@ -16,22 +18,22 @@ class Category(models.Model):
     Одно произведение может быть привязано только к одной категории.
     """
     name = models.CharField(
-        max_length=256,
+        max_length=MAX_NAME_LENGTH,
         verbose_name='Название категории',
         help_text='Введите название категории',
     )
     slug = models.SlugField(
-        max_length=50,
+        max_length=MAX_SLUG_NAME,
         unique=True,
         db_index=True,
         verbose_name='Слаг-индентификатор',
         help_text='Введите slug-идентификатор',
+        validators=(validate_slug,)
     )
-    objects = models.Manager()
 
     class Meta:
         """Метаданные."""
-        ordering = ('id',)
+        ordering = ('name',)
         verbose_name_plural = 'Категории'
         verbose_name = 'Категория'
 
@@ -45,22 +47,22 @@ class Genre(models.Model):
     Одно произведение может быть привязано к нескольким жанрам.
     """
     name = models.CharField(
-        max_length=256,
+        max_length=MAX_NAME_LENGTH,
         verbose_name='Название жанра',
         help_text='Введите название жанра',
     )
     slug = models.SlugField(
-        max_length=50,
+        max_length=MAX_SLUG_NAME,
         unique=True,
         db_index=True,
         verbose_name='Слаг-индентификатор',
         help_text='Введите slug-идентификатор',
+        validators=(validate_slug,)
     )
-    objects = models.Manager()
 
     class Meta:
         """Метаданные."""
-        ordering = ('id',)
+        ordering = ('name',)
         verbose_name_plural = 'Жанры'
         verbose_name = 'Жанр'
 
@@ -74,13 +76,14 @@ class Title(models.Model):
     (определённый фильм, книга или песенка).
     """
     name = models.CharField(
-        max_length=256,
+        max_length=MAX_NAME_LENGTH,
         verbose_name='Название',
         help_text='Введите название произведения',
     )
     year = models.IntegerField(
         verbose_name='Год выпуска',
         help_text='Введите год выпуска произведения',
+        validators=(validate_year, )
     )
     category = models.ForeignKey(
         Category,
@@ -89,7 +92,6 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         verbose_name='Категория произведения',
         help_text='Выберите категорию',
-        related_name='titles',
     )
     description = models.TextField(
         verbose_name='Описание',
@@ -101,15 +103,13 @@ class Title(models.Model):
         Genre,
         verbose_name='Жанр произведения',
         help_text='Выберите жанр',
-        related_name='titles',
     )
-    objects = models.Manager()
 
     class Meta:
         """Метаданные."""
-        ordering = ('id',)
         verbose_name_plural = 'Произведения'
         verbose_name = 'Произведение'
+        default_related_name = 'titles'
 
     def __str__(self):
         return str(self.name)[:HEADER_LENGTH]
@@ -148,7 +148,7 @@ class Review(models.Model):
     class Meta:
         """Метаданные."""
         default_related_name = 'reviews'
-        ordering = ('id',)
+        ordering = ('-pub_date',)
         constraints = (
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -186,7 +186,7 @@ class Comment(models.Model):
     class Meta:
         """Метаданные."""
         default_related_name = 'comments'
-        ordering = ('id',)
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return str(self.text)[:HEADER_LENGTH]
