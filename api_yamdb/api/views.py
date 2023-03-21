@@ -2,13 +2,11 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import viewsets
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny
+from rest_framework import filters, viewsets
 
 from reviews.models import Category, Genre, Review, Title
 from .filter import TitleFilter
-from .mixins import ListCreateDestroyViewSet
+from .mixins import CustomMixinsViewSet
 from .permissions import (IsAccountAdminOrReadOnly,
                           IsAuthorOrAdministratorOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
@@ -16,13 +14,13 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           TitleReadSerializer, TitleWriteSerializer)
 
 
-class CategoryViewSet(ListCreateDestroyViewSet):
+class CategoryViewSet(CustomMixinsViewSet):
     """ViewSet для модели Categories."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenresViewSet(ListCreateDestroyViewSet):
+class GenresViewSet(CustomMixinsViewSet):
     """ViewSet для модели Genres."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
@@ -32,15 +30,11 @@ class TitleViewSet(viewsets.ModelViewSet):
     """ViewSet для модели Titles."""
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    ).all().order_by('name')
-    pagination_class = PageNumberPagination
-    filter_backends = (DjangoFilterBackend,)
+    ).all()
+    permission_classes = (IsAccountAdminOrReadOnly, )
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_class = TitleFilter
-
-    def get_permissions(self):
-        if self.action == 'list' or self.action == 'retrieve':
-            return (AllowAny(),)
-        return (IsAccountAdminOrReadOnly(),)
+    ordering = ('name', )
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
