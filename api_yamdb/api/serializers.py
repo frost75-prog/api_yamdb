@@ -2,7 +2,8 @@ from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueValidator
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Genre, Title, Review, Comment, SCORE_MAX, \
+    SCORE_MIN
 from api_yamdb.settings import MAX_NAME_LENGTH, MAX_SLUG_NAME
 
 
@@ -99,6 +100,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault(),
         slug_field='username',
         read_only=True
+    )
+    score = serializers.IntegerField(
+        max_value=SCORE_MAX,
+        min_value=SCORE_MIN,
     )
 
     def validate(self, data):
