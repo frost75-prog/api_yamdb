@@ -147,7 +147,7 @@ class Review(models.Model):
 
     class Meta:
         default_related_name = 'reviews'
-        ordering = ('-pub_date',)
+        ordering = ('id',)
         constraints = (
             models.UniqueConstraint(
                 fields=['author', 'title'],
