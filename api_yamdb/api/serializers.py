@@ -94,6 +94,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     """
     Сериалайзер для модели Review.
     """
+
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
