@@ -94,10 +94,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     """
     Сериалайзер для модели Review.
     """
-    title = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True,
-    )
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
@@ -119,7 +115,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         """Метаданные."""
         model = Review
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -137,7 +133,7 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         """Метаданные."""
         model = Comment
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = (
             'author',
             'pub_date',

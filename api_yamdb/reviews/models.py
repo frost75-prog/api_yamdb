@@ -148,7 +148,7 @@ class Review(models.Model):
     class Meta:
         """Метаданные."""
         default_related_name = 'reviews'
-        ordering = ('id',)
+        ordering = ('-pub_date',)
         constraints = (
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -186,7 +186,7 @@ class Comment(models.Model):
     class Meta:
         """Метаданные."""
         default_related_name = 'comments'
-        ordering = ('id',)
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return str(self.text)[:HEADER_LENGTH]
