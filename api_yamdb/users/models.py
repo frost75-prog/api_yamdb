@@ -1,63 +1,53 @@
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 
-from api_yamdb.settings import REGEX_USER
+from api_yamdb.settings import MAX_LENGTH_USERNAME
+from .validators import validate_username
 
 
-def username_not_correct(value):
-    """
-    Метод проверки username на корректность.
-    """
-    return not REGEX_USER.match(value) or value.lower() == 'me'
+class UserRole(models.TextChoices):
+    """ Роли пользователей. """
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+
+
+MAX_LENGTH_ROLES = max(len(_) for _ in UserRole.choices[1])
 
 
 class MyUserManager(UserManager):
     """
-    Кастомный менеджер для создания юзеров.
+    Кастомный менеджер для создания суперюзера с правами админа.
     """
-    def create_user(self, username, email, password, **extra_fields):
-        if not email:
-            raise ValueError('Поле email обязательно!')
-        if username_not_correct(username):
-            raise ValueError('Invalid username!')
-        return super().create_user(
-            username, email=email, password=password, **extra_fields)
-
     def create_superuser(
-            self, username, email, password, role='admin', **extra_fields):
+            self, username, email, password, role, **extra_fields):
         return super().create_superuser(
-            username, email, password, role='admin', **extra_fields)
+            username, email, password, role=UserRole.ADMIN, **extra_fields)
 
 
 class User(AbstractUser):
     """
     Модель для User. Параметры полей.
     """
-
-    ROLE_CHOICES = [
-        ('user', 'User'),
-        ('moderator', 'Moderator'),
-        ('admin', 'Administrator'),
-    ]
-
     username = models.CharField(
-        max_length=150,
+        verbose_name='Имя пользователя',
+        validators=[validate_username],
+        max_length=MAX_LENGTH_USERNAME,
         unique=True,
         db_index=True
     )
     bio = models.TextField(
-        'Биография',
+        verbose_name='Биография',
         blank=True,
         null=True
     )
     role = models.CharField(
-        max_length=9,
-        choices=ROLE_CHOICES,
-        default='user'
+        verbose_name='Роль',
+        max_length=MAX_LENGTH_ROLES,
+        choices=UserRole.choices,
+        default=UserRole.USER
     )
     objects = MyUserManager()
-
-    REQUIRED_FIELDS = ('email', 'password')
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -73,7 +63,7 @@ class User(AbstractUser):
         Свойство.
         Возвращает права админа.
         """
-        return self.role == self.ROLE_CHOICES[2][0]
+        return self.role == UserRole.ADMIN
 
     @property
     def is_moderator(self):
@@ -81,4 +71,4 @@ class User(AbstractUser):
         Свойство.
         Возвращает права модератора.
         """
-        return self.role == self.ROLE_CHOICES[1][0]
+        return self.role == UserRole.MODERATOR
