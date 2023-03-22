@@ -15,12 +15,13 @@ class UserRole(models.TextChoices):
 MAX_LENGTH_ROLES = max(len(_) for _ in UserRole.choices[1])
 
 
-class MyUserManager(UserManager):
+class UserManagerSuperuserIsAdmin(UserManager):
     """
     Кастомный менеджер для создания суперюзера с правами админа.
     """
     def create_superuser(
-            self, username, email, password, role, **extra_fields):
+            self, username, email, password, role=UserRole.ADMIN,
+            **extra_fields):
         return super().create_superuser(
             username, email, password, role=UserRole.ADMIN, **extra_fields)
 
@@ -47,12 +48,12 @@ class User(AbstractUser):
         choices=UserRole.choices,
         default=UserRole.USER
     )
-    objects = MyUserManager()
+    objects = UserManagerSuperuserIsAdmin()
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('id',)
+        ordering = ('username',)
 
     def __str__(self):
         return str(self.username)

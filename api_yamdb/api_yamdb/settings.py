@@ -104,7 +104,7 @@ STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
 PAGINATOR_PAGE = 30
 
-REGEX_USER = re.compile(r'^(?!me$)[\w.@+-]+\Z')
+REGEX_USER = re.compile(r'^[\w.@+-]+\Z')
 REGEX_SLUG = re.compile(r'^[-a-zA-Z0-9_]+$')
 
 API_VERSION_SLUG = 'v1/'
