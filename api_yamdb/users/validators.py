@@ -13,3 +13,6 @@ def validate_username(value):
             _('%(value)s is invalid username!'),
             params={'value': value},
         )
+    if value == 'me':
+        raise ValidationError('"me" is invalid username!')
+    return value

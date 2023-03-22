@@ -6,7 +6,7 @@ from rest_framework import filters, viewsets
 
 from reviews.models import Category, Genre, Review, Title
 from .filter import TitleFilter
-from .mixins import CustomMixinsViewSet
+from .mixins import ModelMixinCreateReadDelete
 from .permissions import (IsAccountAdminOrReadOnly,
                           IsAuthorOrAdministratorOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
@@ -14,13 +14,13 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           TitleReadSerializer, TitleWriteSerializer)
 
 
-class CategoryViewSet(CustomMixinsViewSet):
+class CategoryViewSet(ModelMixinCreateReadDelete):
     """ViewSet для модели Categories."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenresViewSet(CustomMixinsViewSet):
+class GenresViewSet(ModelMixinCreateReadDelete):
     """ViewSet для модели Genres."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer

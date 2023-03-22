@@ -1,10 +1,9 @@
 from rest_framework import filters, mixins, viewsets
-from rest_framework.pagination import PageNumberPagination
 
 from .permissions import IsAccountAdminOrReadOnly
 
 
-class CustomMixinsViewSet(
+class ModelMixinCreateReadDelete(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
@@ -12,8 +11,8 @@ class CustomMixinsViewSet(
 ):
     """
     Кастомный набор контройлеров.
+    (CRD - create, read, delete)
     """
-    pagination_class = PageNumberPagination
     permission_classes = (IsAccountAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
