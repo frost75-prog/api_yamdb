@@ -1,27 +1,14 @@
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
-from rest_framework.validators import UniqueValidator
 
 from reviews.models import (SCORE_MAX, SCORE_MIN, Category, Comment, Genre,
                             Review, Title)
-from api_yamdb.settings import MAX_NAME_LENGTH, MAX_SLUG_NAME
 
 
 class CategorySerializer(serializers.ModelSerializer):
     """
     Serializer для модели Category.
     """
-    name = serializers.CharField(
-        max_length=MAX_NAME_LENGTH,
-        required=True,
-        validators=[UniqueValidator(queryset=Category.objects.all())]
-    )
-    slug = serializers.SlugField(
-        max_length=MAX_SLUG_NAME,
-        required=True,
-        validators=[UniqueValidator(queryset=Category.objects.all())]
-    )
-
     class Meta:
         """Метаданные."""
         model = Category
@@ -33,16 +20,6 @@ class GenreSerializer(CategorySerializer):
     """
     Serializer для модели Genre.
     """
-    name = serializers.CharField(
-        max_length=MAX_NAME_LENGTH,
-        required=True,
-        validators=[UniqueValidator(queryset=Genre.objects.all())]
-    )
-    slug = serializers.SlugField(
-        max_length=MAX_SLUG_NAME,
-        required=True,
-        validators=[UniqueValidator(queryset=Genre.objects.all())]
-    )
 
     class Meta:
         """Метаданные."""
@@ -67,8 +44,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'category', 'genre', 'year', 'name', 'description', 'rating')
         model = Title
-        read_only_fields = (
-            'id', 'year', 'name', 'description',)
+        read_only_fields = fields
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
